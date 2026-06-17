@@ -57,3 +57,26 @@ The wrapper sets `GULP_ROOT`, `GULP_LIB`, and `GULP_DOC`. On this macOS
 machine, the OpenMPI 4/gfortran-12 variant has been validated with
 `mpirun -np 6 gulp < input.gin > output.got` against `Examples/example1.gin`.
 Ubuntu/Linux should still be verified separately for actual MPI runs.
+
+## GULP 6.0 MPI
+
+The GULP 6.0 source archive is kept outside Git at:
+
+```text
+~/Documents/software/distfiles/gulp/6.0/gulp-6.0.tgz
+```
+
+Verified hashes:
+
+```text
+sha1   1fece7bc22affb8b5d3857bb4ea119251cda0534
+sha256 f73b0f68c8ba499e3f9f0d0de5e3b34307e0b8579387a4cb2b9cdfd1cf62e9d1
+SRI    sha256-9zsPaMi6SZ4/nw0N5eOzQwfguFeTh6TLK5zf0c9i6dE=
+```
+
+Build:
+
+```sh
+nix store add-file ~/Documents/software/distfiles/gulp/6.0/gulp-6.0.tgz
+nix build .#gulp60
+```

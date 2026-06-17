@@ -3,6 +3,8 @@
   stdenvNoCC,
   requireFile,
   makeWrapper,
+  darwin,
+  openmpi,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -17,6 +19,7 @@ stdenvNoCC.mkDerivation rec {
 
   nativeBuildInputs = [
     makeWrapper
+    darwin.cctools
   ];
 
   dontUnpack = true;
@@ -37,11 +40,20 @@ stdenvNoCC.mkDerivation rec {
       --target "$extract_dir" \
       -- -x -p "$out/lib/orca"
 
+    for prog in "$out/lib/orca"/* "$out/lib/orca/lib"/*; do
+      if [ -f "$prog" ]; then
+        install_name_tool -change libmpi.40.dylib "${openmpi}/lib/libmpi.40.dylib" "$prog" || true
+        install_name_tool -add_rpath "${openmpi}/lib" "$prog" || true
+        install_name_tool -add_rpath "$out/lib/orca/lib" "$prog" || true
+      fi
+    done
+
     for prog in "$out/lib/orca"/orca "$out/lib/orca"/orca_* "$out/lib/orca"/otool_*; do
       if [ -f "$prog" ] && [ -x "$prog" ]; then
         makeWrapper "$prog" "$out/bin/$(basename "$prog")" \
-          --prefix PATH : "$out/lib/orca" \
-          --prefix DYLD_LIBRARY_PATH : "$out/lib/orca/lib" \
+          --prefix PATH : "$out/lib/orca:${openmpi}/bin" \
+          --prefix DYLD_FALLBACK_LIBRARY_PATH : "$out/lib/orca/lib:${openmpi}/lib" \
+          --prefix DYLD_LIBRARY_PATH : "$out/lib/orca/lib:${openmpi}/lib" \
           --set ORCA_DIR "$out/lib/orca"
       fi
     done

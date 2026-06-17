@@ -35,6 +35,8 @@ packages/
     6.1.0.nix
     default.nix
     README.md
+  xtb/
+    default.nix
 ```
 
 Package-specific distfile paths, hashes, build commands, and smoke-test notes
@@ -44,9 +46,24 @@ live next to each package:
 - [ORCA](packages/orca/README.md)
 - [CRYSTAL23](packages/crystal23/README.md)
 - [g-xTB](packages/g-xtb/README.md)
+- [xTB](packages/xtb/README.md)
 
 Reusable environments such as `gulp`, `orca`, and `chemistry` are exposed as
 `devShells` from `flake.nix`.
+
+## Project flake template
+
+Use [templates/project-flake.nix](templates/project-flake.nix) when a project
+should consume this shared software repo. Project flakes should normally list
+only external scientific binaries. Keep Python and `uv` managed outside Nix.
+
+Use aliases such as `orca` or `gulp` for convenient current defaults. Use
+versioned aliases such as `orca611`, `orca610`, `gulp64`, `gulp60`, or `xtb671`
+when a project needs stricter reproducibility.
+
+Treat ordinary xTB and g-xTB as separate software. Use `xtb` or `xtb671` for
+ordinary xTB. Use `g-xtb` only when the experimental g-xTB package is
+explicitly needed.
 
 ## Local distfiles now in use
 
@@ -63,4 +80,10 @@ Reusable environments such as `gulp`, `orca`, and `chemistry` are exposed as
 
 ```text
 https://github.com/grimme-lab/g-xtb/releases/download/v2.0.1/xtb-6.7.1-gxtb-140526-macos-arm64.tar.gz
+```
+
+Ordinary `xTB` 6.7.1 uses the public upstream source release directly:
+
+```text
+https://github.com/grimme-lab/xtb/releases/download/v6.7.1/xtb-6.7.1-source.tar.xz
 ```

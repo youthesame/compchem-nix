@@ -16,7 +16,26 @@
       forEachSystem = nixpkgs.lib.genAttrs systems;
       pkgsFor = system: import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+          allowUnsupportedSystem = system == "aarch64-darwin";
+        };
+        overlays = [
+          (_final: prev: {
+            mctc-lib = prev.mctc-lib.overrideAttrs (_: {
+              doCheck = false;
+            });
+            multicharge = prev.multicharge.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
+            });
+            dftd4 = prev.dftd4.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
+            });
+            simple-dftd3 = prev.simple-dftd3.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
+            });
+          })
+        ];
       };
       pkgsOpenmpi4For = system: import nixpkgs-openmpi4 {
         inherit system;
@@ -53,12 +72,15 @@
             openmpi = openmpi4ForGulp;
             scalapack = scalapackOpenmpi4ForGulp;
           };
+          xtbPackage = pkgs.callPackage ./packages/xtb { };
         in
         {
           gulp = gulpOpenmpi4;
           gulp-openmpi4 = gulpOpenmpi4;
           gulp64 = gulpOpenmpi4;
           gulp60 = gulp60Openmpi4;
+          xtb = xtbPackage;
+          xtb671 = xtbPackage;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
           orca = pkgs.callPackage ./packages/orca {
             openmpi = openmpi4ForGulp;
@@ -94,6 +116,7 @@
           chemistry = pkgs.mkShell {
             packages = [
               packages.gulp
+              packages.xtb
               openmpi4ForGulp
               (openmpi4ForGulp.dev or openmpi4ForGulp)
               pkgs.python3
@@ -119,6 +142,11 @@
               packages.gulp60
               openmpi4ForGulp
               (openmpi4ForGulp.dev or openmpi4ForGulp)
+            ];
+          };
+          xtb = pkgs.mkShell {
+            packages = [
+              packages.xtb
             ];
           };
         } // pkgs.lib.optionalAttrs (packages ? orca) {

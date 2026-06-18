@@ -3,10 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-cp2k.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-openmpi4.url = "github:NixOS/nixpkgs/nixos-24.05";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-openmpi4, ... }:
+  outputs = { self, nixpkgs, nixpkgs-cp2k, nixpkgs-openmpi4, ... }:
     let
       systems = [
         "aarch64-darwin"
@@ -37,6 +38,65 @@
           })
         ];
       };
+      pkgsCp2kFor = system: import nixpkgs-cp2k {
+        inherit system;
+        config.allowUnsupportedSystem = system == "aarch64-darwin";
+        overlays = [
+          (final: prev: {
+            libxsmm = prev.libxsmm.overrideAttrs (old: {
+              postPatch = (old.postPatch or "") + ''
+                substituteInPlace Makefile.inc --replace-fail "-Wa,-q" ""
+              '';
+              meta = old.meta // {
+                platforms = old.meta.platforms ++ [ "aarch64-darwin" ];
+              };
+            });
+            dbcsr = prev.dbcsr.overrideAttrs (old: {
+              buildInputs =
+                (builtins.filter (pkg: (pkg.pname or "") != "libxsmm") (old.buildInputs or [ ]))
+                ++ [ final.llvmPackages.openmp ];
+              doCheck = false;
+              cmakeFlags = builtins.map
+                (flag:
+                  if flag == "-DUSE_SMM=libxsmm" then
+                    "-DUSE_SMM=blas"
+                  else
+                    flag)
+                (old.cmakeFlags or [ ]);
+            });
+            spglib = prev.spglib.overrideAttrs (_: {
+              doCheck = false;
+            });
+            elpa = (prev.elpa.override {
+              stdenv = final.stdenvAdapters.overrideCC final.stdenv final.gcc;
+            }).overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ final.llvmPackages.openmp ];
+              enableParallelBuilding = false;
+              doCheck = false;
+              postPatch = (old.postPatch or "") + ''
+                substituteInPlace src/helpers/check_thread_affinity.c \
+                  --replace-fail '#include <unistd.h>' '#include <unistd.h>
+  #ifdef __APPLE__
+  void get_thread_affinity(int *cpu_id) {
+    *cpu_id = -1;
+  }
+  void get_process_affinity(int cpu_id) {
+    (void)cpu_id;
+  }
+  #else' \
+                  --replace-fail 'void get_process_id(int *process_id, int *pprocess_id) {' '#endif
+  void get_process_id(int *process_id, int *pprocess_id) {'
+              '';
+              postInstall = (old.postInstall or "") + ''
+                ln -s elpa.pc $dev/lib/pkgconfig/elpa_openmp.pc
+              '';
+              meta = old.meta // {
+                platforms = old.meta.platforms ++ [ "aarch64-darwin" ];
+              };
+            });
+          })
+        ];
+      };
       pkgsOpenmpi4For = system: import nixpkgs-openmpi4 {
         inherit system;
         config.allowUnfree = true;
@@ -50,6 +110,7 @@
       packages = forEachSystem (system:
         let
           pkgs = pkgsFor system;
+          pkgsCp2k = pkgsCp2kFor system;
           pkgsOpenmpi4 = pkgsOpenmpi4For system;
           openmpi4ForGulp = (pkgsOpenmpi4.openmpi.override {
             gfortran = pkgsOpenmpi4.gfortran12;
@@ -73,8 +134,24 @@
             scalapack = scalapackOpenmpi4ForGulp;
           };
           xtbPackage = pkgs.callPackage ./packages/xtb { };
+          cp2kGnuStdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
+          cp2kPackage = pkgsCp2k.callPackage ./packages/cp2k {
+            stdenv = cp2kGnuStdenv;
+          };
+          cp2kLibintPackage = pkgsCp2k.callPackage ./packages/cp2k {
+            stdenv = cp2kGnuStdenv;
+            enableLibint = true;
+          };
+          cp2kElpaPackage = pkgsCp2k.callPackage ./packages/cp2k {
+            stdenv = cp2kGnuStdenv;
+            enableElpa = true;
+          };
         in
         {
+          cp2k20261 = cp2kPackage;
+          cp2k20261-libint = cp2kLibintPackage;
+          cp2k20261-elpa = cp2kElpaPackage;
+          cp2k = cp2kPackage;
           gulp = gulpOpenmpi4;
           gulp-openmpi4 = gulpOpenmpi4;
           gulp64 = gulpOpenmpi4;
@@ -104,6 +181,7 @@
       devShells = forEachSystem (system:
         let
           pkgs = pkgsFor system;
+          pkgsCp2k = pkgsCp2kFor system;
           pkgsOpenmpi4 = pkgsOpenmpi4For system;
           openmpi4ForGulp = (pkgsOpenmpi4.openmpi.override {
             gfortran = pkgsOpenmpi4.gfortran12;
@@ -147,6 +225,18 @@
           xtb = pkgs.mkShell {
             packages = [
               packages.xtb
+            ];
+          };
+          cp2k = pkgsCp2k.mkShell {
+            packages = [
+              packages.cp2k
+              packages.cp2k.mpi
+            ];
+          };
+          cp2k20261 = pkgsCp2k.mkShell {
+            packages = [
+              packages.cp2k20261
+              packages.cp2k20261.mpi
             ];
           };
         } // pkgs.lib.optionalAttrs (packages ? orca) {

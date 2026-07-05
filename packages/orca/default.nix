@@ -3,7 +3,6 @@
   stdenvNoCC,
   requireFile,
   makeWrapper,
-  darwin,
   openmpi,
 }:
 
@@ -19,7 +18,6 @@ stdenvNoCC.mkDerivation rec {
 
   nativeBuildInputs = [
     makeWrapper
-    darwin.cctools
   ];
 
   dontUnpack = true;
@@ -40,14 +38,10 @@ stdenvNoCC.mkDerivation rec {
       --target "$extract_dir" \
       -- -x -p "$out/lib/orca"
 
-    for prog in "$out/lib/orca"/* "$out/lib/orca/lib"/*; do
-      if [ -f "$prog" ]; then
-        install_name_tool -change libmpi.40.dylib "${openmpi}/lib/libmpi.40.dylib" "$prog" || true
-        install_name_tool -add_rpath "${openmpi}/lib" "$prog" || true
-        install_name_tool -add_rpath "$out/lib/orca/lib" "$prog" || true
-      fi
-    done
-
+    # The vendor binaries lack Mach-O headerpad space, so install_name_tool
+    # cannot rewrite the bare libmpi.40.dylib reference. Bundled liborca_*
+    # resolve via the shipped LC_RPATH @loader_path/lib; libmpi resolves via
+    # the DYLD_* variables set in the wrappers below.
     for prog in "$out/lib/orca"/orca "$out/lib/orca"/orca_* "$out/lib/orca"/otool_*; do
       if [ -f "$prog" ] && [ -x "$prog" ]; then
         makeWrapper "$prog" "$out/bin/$(basename "$prog")" \

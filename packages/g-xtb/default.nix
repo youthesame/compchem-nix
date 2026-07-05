@@ -25,12 +25,9 @@ stdenvNoCC.mkDerivation rec {
     mkdir -p "$out"
     cp -R . "$out/"
 
-    for prog in "$out/bin"/* "$out/lib"/*.dylib; do
-      if [ -f "$prog" ]; then
-        install_name_tool -add_rpath "${gccFortran.cc.lib}/lib" "$prog" || true
-      fi
-    done
-
+    # The vendor binaries reference Homebrew absolute paths, not @rpath, and
+    # lack Mach-O headerpad space for install_name_tool rewrites. Rely on
+    # DYLD_FALLBACK_LIBRARY_PATH pointing at the bundled libs instead.
     for prog in "$out/bin"/*; do
       if [ -f "$prog" ] && [ -x "$prog" ]; then
         mv "$prog" "$prog-wrapped"
@@ -38,7 +35,7 @@ stdenvNoCC.mkDerivation rec {
           --set GXTB_ROOT "$out" \
           --set XTBPATH "$out/share/xtb" \
           --prefix PATH : "$out/bin" \
-          --prefix DYLD_FALLBACK_LIBRARY_PATH : "${gccFortran.cc.lib}/lib" \
+          --prefix DYLD_FALLBACK_LIBRARY_PATH : "$out/lib:${gccFortran.cc.lib}/lib" \
           --prefix DYLD_LIBRARY_PATH : "${gccFortran.cc.lib}/lib"
       fi
     done

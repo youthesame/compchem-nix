@@ -1,5 +1,9 @@
 # ORCA 6.1.1 macOS arm64
 
+`default.nix` holds the current ORCA package, exported as `orca` and `orca611`.
+Older retained versions use explicit files such as `6.1.0.nix` and are exported
+with versioned aliases such as `orca610`.
+
 The ORCA installer is not stored in Git. Keep the manually downloaded file at:
 
 ```text

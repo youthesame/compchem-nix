@@ -24,6 +24,9 @@ packages/
   crystal23/
     default.nix
     README.md
+  cp2k/
+    default.nix
+    README.md
   g-xtb/
     default.nix
     README.md
@@ -45,11 +48,12 @@ live next to each package:
 - [GULP](packages/gulp/README.md)
 - [ORCA](packages/orca/README.md)
 - [CRYSTAL23](packages/crystal23/README.md)
+- [CP2K](packages/cp2k/README.md) (`aarch64-darwin` only)
 - [g-xTB](packages/g-xtb/README.md)
 - [xTB](packages/xtb/README.md)
 
-Reusable environments such as `gulp`, `orca`, and `chemistry` are exposed as
-`devShells` from `flake.nix`.
+Reusable environments such as `gulp`, `orca`, `cp2k`, and `chemistry` are
+exposed as `devShells` from `flake.nix`.
 
 ## Project flake template
 

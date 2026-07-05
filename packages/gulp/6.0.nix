@@ -75,9 +75,6 @@ stdenv.mkDerivation rec {
     homepage = "https://gulp.curtin.edu.au/gulp/";
     license = lib.licenses.unfree;
     mainProgram = "gulp";
-    platforms = [
-      "aarch64-darwin"
-      "x86_64-linux"
-    ];
+    platforms = [ "aarch64-darwin" ];
   };
 }

@@ -2,8 +2,11 @@
   description = "Reusable Nix software definitions";
 
   inputs = {
+    # Stable 25.05 baseline for most reusable chemistry packages.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    # Unstable pin for newer CP2K toolchain/deps on aarch64-darwin.
     nixpkgs-cp2k.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Keep OpenMPI 4.1.x + gfortran12 ABI for vendor ORCA/CRYSTAL23/GULP binaries.
     nixpkgs-openmpi4.url = "github:NixOS/nixpkgs/nixos-24.05";
   };
 
@@ -43,14 +46,6 @@
         config.allowUnsupportedSystem = system == "aarch64-darwin";
         overlays = [
           (final: prev: {
-            libxsmm = prev.libxsmm.overrideAttrs (old: {
-              postPatch = (old.postPatch or "") + ''
-                substituteInPlace Makefile.inc --replace-fail "-Wa,-q" ""
-              '';
-              meta = old.meta // {
-                platforms = old.meta.platforms ++ [ "aarch64-darwin" ];
-              };
-            });
             dbcsr = prev.dbcsr.overrideAttrs (old: {
               buildInputs =
                 (builtins.filter (pkg: (pkg.pname or "") != "libxsmm") (old.buildInputs or [ ]))
@@ -106,8 +101,7 @@
           })
         ];
       };
-    in {
-      packages = forEachSystem (system:
+      perSystem = system:
         let
           pkgs = pkgsFor system;
           pkgsCp2k = pkgsCp2kFor system;
@@ -146,12 +140,27 @@
             stdenv = cp2kGnuStdenv;
             enableElpa = true;
           };
+        in {
+          inherit
+            pkgs
+            pkgsCp2k
+            pkgsOpenmpi4
+            openmpi4ForGulp
+            gulpOpenmpi4
+            gulp60Openmpi4
+            xtbPackage
+            cp2kPackage
+            cp2kLibintPackage
+            cp2kElpaPackage;
+        };
+      systemsData = forEachSystem perSystem;
+    in {
+      packages = forEachSystem (system:
+        let
+          systemData = systemsData.${system};
+          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp gulpOpenmpi4 gulp60Openmpi4 xtbPackage;
         in
         {
-          cp2k20261 = cp2kPackage;
-          cp2k20261-libint = cp2kLibintPackage;
-          cp2k20261-elpa = cp2kElpaPackage;
-          cp2k = cp2kPackage;
           gulp = gulpOpenmpi4;
           gulp-openmpi4 = gulpOpenmpi4;
           gulp64 = gulpOpenmpi4;
@@ -159,6 +168,10 @@
           xtb = xtbPackage;
           xtb671 = xtbPackage;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
+          cp2k20261 = systemData.cp2kPackage;
+          cp2k20261-libint = systemData.cp2kLibintPackage;
+          cp2k20261-elpa = systemData.cp2kElpaPackage;
+          cp2k = systemData.cp2kPackage;
           orca = pkgs.callPackage ./packages/orca {
             openmpi = openmpi4ForGulp;
           };
@@ -180,14 +193,8 @@
 
       devShells = forEachSystem (system:
         let
-          pkgs = pkgsFor system;
-          pkgsCp2k = pkgsCp2kFor system;
-          pkgsOpenmpi4 = pkgsOpenmpi4For system;
-          openmpi4ForGulp = (pkgsOpenmpi4.openmpi.override {
-            gfortran = pkgsOpenmpi4.gfortran12;
-          }).overrideAttrs (_: {
-            doCheck = false;
-          });
+          systemData = systemsData.${system};
+          inherit (systemData) pkgs pkgsCp2k openmpi4ForGulp;
           packages = self.packages.${system};
         in
         {
@@ -227,6 +234,7 @@
               packages.xtb
             ];
           };
+        } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
           cp2k = pkgsCp2k.mkShell {
             packages = [
               packages.cp2k

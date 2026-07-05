@@ -1,5 +1,9 @@
 # GULP 6.4 MPI
 
+`default.nix` holds the current GULP package, exported as `gulp` and `gulp64`.
+Older retained versions use explicit files such as `6.0.nix` and are exported
+with versioned aliases such as `gulp60`.
+
 The GULP source archive is kept outside Git at:
 
 ```text
@@ -57,6 +61,8 @@ The wrapper sets `GULP_ROOT`, `GULP_LIB`, and `GULP_DOC`. On this macOS
 machine, the OpenMPI 4/gfortran-12 variant has been validated with
 `mpirun -np 6 gulp < input.gin > output.got` against `Examples/example1.gin`.
 Ubuntu/Linux should still be verified separately for actual MPI runs.
+`x86_64-linux` can be re-added to `meta.platforms` once a Linux smoke test is
+recorded.
 
 ## GULP 6.0 MPI
 

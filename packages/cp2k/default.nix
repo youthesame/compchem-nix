@@ -106,7 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "cp2k";
     repo = "cp2k";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-PGM1C9DIH+3TgB3fv0/X5FSFBYjMpiV6U5GqzIVfj4Y=";
+    hash = "sha256-1c4jM1Mdu7Lptjn8nQ/nYQpdXQa5mcm0NRsAU9Muw8w=";
     fetchSubmodules = true;
   };
 

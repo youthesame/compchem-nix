@@ -128,6 +128,7 @@
             scalapack = scalapackOpenmpi4ForGulp;
           };
           xtbPackage = pkgs.callPackage ./packages/xtb { };
+          amberclassicPackage = pkgs.callPackage ./packages/amberclassic { };
           cp2kGnuStdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
           cp2kPackage = pkgsCp2k.callPackage ./packages/cp2k {
             stdenv = cp2kGnuStdenv;
@@ -149,6 +150,7 @@
             gulpOpenmpi4
             gulp60Openmpi4
             xtbPackage
+            amberclassicPackage
             cp2kPackage
             cp2kLibintPackage
             cp2kElpaPackage;
@@ -167,6 +169,8 @@
           gulp60 = gulp60Openmpi4;
           xtb = xtbPackage;
           xtb671 = xtbPackage;
+          amberclassic = systemData.amberclassicPackage;
+          antechamber = systemData.amberclassicPackage;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
           cp2k20261 = systemData.cp2kPackage;
           cp2k20261-libint = systemData.cp2kLibintPackage;
@@ -232,6 +236,16 @@
           xtb = pkgs.mkShell {
             packages = [
               packages.xtb
+            ];
+          };
+          amberclassic = pkgs.mkShell {
+            packages = [
+              packages.amberclassic
+            ];
+          };
+          antechamber = pkgs.mkShell {
+            packages = [
+              packages.antechamber
             ];
           };
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {

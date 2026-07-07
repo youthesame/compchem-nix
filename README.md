@@ -40,6 +40,9 @@ packages/
     README.md
   xtb/
     default.nix
+  amberclassic/
+    default.nix
+    README.md
 ```
 
 Package-specific distfile paths, hashes, build commands, and smoke-test notes
@@ -51,9 +54,10 @@ live next to each package:
 - [CP2K](packages/cp2k/README.md) (`aarch64-darwin` only)
 - [g-xTB](packages/g-xtb/README.md)
 - [xTB](packages/xtb/README.md)
+- [AmberClassic / antechamber](packages/amberclassic/README.md)
 
-Reusable environments such as `gulp`, `orca`, `cp2k`, and `chemistry` are
-exposed as `devShells` from `flake.nix`.
+Reusable environments such as `gulp`, `orca`, `cp2k`, `antechamber`, and
+`chemistry` are exposed as `devShells` from `flake.nix`.
 
 ## Project flake template
 
@@ -90,4 +94,10 @@ Ordinary `xTB` 6.7.1 uses the public upstream source release directly:
 
 ```text
 https://github.com/grimme-lab/xtb/releases/download/v6.7.1/xtb-6.7.1-source.tar.xz
+```
+
+AmberClassic 2.0 uses the public upstream GitHub source release directly:
+
+```text
+https://github.com/Amber-MD/AmberClassic/releases/tag/v2.0
 ```

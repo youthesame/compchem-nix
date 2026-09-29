@@ -33,6 +33,8 @@
   mstore,
   test-drive,
   toml-f,
+  version ? "2026.1",
+  sourceHash ? "sha256-1c4jM1Mdu7Lptjn8nQ/nYQpdXQa5mcm0NRsAU9Muw8w=",
   enableElpa ? false,
   enableLibint ? false,
 }:
@@ -100,13 +102,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "cp2k";
-  version = "2026.1";
+  inherit version;
 
   src = fetchFromGitHub {
     owner = "cp2k";
     repo = "cp2k";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-1c4jM1Mdu7Lptjn8nQ/nYQpdXQa5mcm0NRsAU9Muw8w=";
+    hash = sourceHash;
     fetchSubmodules = true;
   };
 

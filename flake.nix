@@ -133,6 +133,9 @@
           cp2kPackage = pkgsCp2k.callPackage ./packages/cp2k {
             stdenv = cp2kGnuStdenv;
           };
+          cp2k20262Package = pkgsCp2k.callPackage ./packages/cp2k/2026.2.nix {
+            cp2k = cp2kPackage;
+          };
           cp2kLibintPackage = pkgsCp2k.callPackage ./packages/cp2k {
             stdenv = cp2kGnuStdenv;
             enableLibint = true;
@@ -152,6 +155,7 @@
             xtbPackage
             amberclassicPackage
             cp2kPackage
+            cp2k20262Package
             cp2kLibintPackage
             cp2kElpaPackage;
         };
@@ -172,6 +176,7 @@
           amberclassic = systemData.amberclassicPackage;
           antechamber = systemData.amberclassicPackage;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
+          cp2k20262 = systemData.cp2k20262Package;
           cp2k20261 = systemData.cp2kPackage;
           cp2k20261-libint = systemData.cp2kLibintPackage;
           cp2k20261-elpa = systemData.cp2kElpaPackage;
@@ -254,6 +259,9 @@
               packages.cp2k
               packages.cp2k.mpi
             ];
+          };
+          cp2k20262 = pkgsCp2k.mkShell {
+            packages = [ packages.cp2k20262 packages.cp2k20262.mpi ];
           };
           cp2k20261 = pkgsCp2k.mkShell {
             packages = [

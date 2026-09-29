@@ -48,6 +48,7 @@ stdenvNoCC.mkDerivation rec {
           --prefix PATH : "$out/lib/orca:${openmpi}/bin" \
           --prefix DYLD_FALLBACK_LIBRARY_PATH : "$out/lib/orca/lib:${openmpi}/lib" \
           --prefix DYLD_LIBRARY_PATH : "$out/lib/orca/lib:${openmpi}/lib" \
+          --set OMPI_MCA_mca_base_env_list "DYLD_LIBRARY_PATH=$out/lib/orca/lib:${openmpi}/lib;DYLD_FALLBACK_LIBRARY_PATH=$out/lib/orca/lib:${openmpi}/lib;PATH;ORCA_DIR" \
           --set ORCA_DIR "$out/lib/orca"
       fi
     done

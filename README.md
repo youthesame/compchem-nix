@@ -17,6 +17,18 @@ nix build .#gulp
 nix develop .#gulp -c which gulp
 ```
 
+## Keeping builds across garbage collection
+
+`nix-store --gc` deletes every build not reachable from a root. Pin the builds to
+keep with an out-link in the Git-ignored `gcroots/`:
+
+```sh
+nix build .#<package> --out-link gcroots/<package>
+```
+
+Anything unpinned is rebuilt on next use; `requireFile` sources must first be
+re-added with `nix store add-file`.
+
 ## Packages
 
 ```text

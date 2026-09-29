@@ -21,10 +21,10 @@
           # softwarePackages.crystal23
           # softwarePackages.gulp     # Default GULP alias, currently GULP 6.4.
           # softwarePackages.gulp64   # Fixed GULP 6.4.
-          # softwarePackages.gulp60   # Fixed GULP 6.0.
           # softwarePackages.xtb      # Default ordinary xTB alias, currently xTB 6.7.1.
           # softwarePackages.xtb671   # Fixed ordinary xTB 6.7.1.
-          # softwarePackages.g-xtb    # Experimental g-xTB; separate from ordinary xTB.
+          # softwarePackages.cp2k     # Default CP2K alias, currently CP2K 2026.2.
+          # softwarePackages.cp2k20262 # Fixed CP2K 2026.2.
         ];
       };
     };

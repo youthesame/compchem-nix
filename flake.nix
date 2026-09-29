@@ -62,33 +62,6 @@
             spglib = prev.spglib.overrideAttrs (_: {
               doCheck = false;
             });
-            elpa = (prev.elpa.override {
-              stdenv = final.stdenvAdapters.overrideCC final.stdenv final.gcc;
-            }).overrideAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ final.llvmPackages.openmp ];
-              enableParallelBuilding = false;
-              doCheck = false;
-              postPatch = (old.postPatch or "") + ''
-                substituteInPlace src/helpers/check_thread_affinity.c \
-                  --replace-fail '#include <unistd.h>' '#include <unistd.h>
-  #ifdef __APPLE__
-  void get_thread_affinity(int *cpu_id) {
-    *cpu_id = -1;
-  }
-  void get_process_affinity(int cpu_id) {
-    (void)cpu_id;
-  }
-  #else' \
-                  --replace-fail 'void get_process_id(int *process_id, int *pprocess_id) {' '#endif
-  void get_process_id(int *process_id, int *pprocess_id) {'
-              '';
-              postInstall = (old.postInstall or "") + ''
-                ln -s elpa.pc $dev/lib/pkgconfig/elpa_openmp.pc
-              '';
-              meta = old.meta // {
-                platforms = old.meta.platforms ++ [ "aarch64-darwin" ];
-              };
-            });
           })
         ];
       };
@@ -122,11 +95,6 @@
             openmpi = openmpi4ForGulp;
             scalapack = scalapackOpenmpi4ForGulp;
           };
-          gulp60Openmpi4 = pkgsOpenmpi4.callPackage ./packages/gulp/6.0.nix {
-            gfortran = pkgsOpenmpi4.gfortran12;
-            openmpi = openmpi4ForGulp;
-            scalapack = scalapackOpenmpi4ForGulp;
-          };
           xtbPackage = pkgs.callPackage ./packages/xtb { };
           amberclassicPackage = pkgs.callPackage ./packages/amberclassic { };
           cp2kGnuStdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
@@ -136,14 +104,6 @@
           cp2k20262Package = pkgsCp2k.callPackage ./packages/cp2k/2026.2.nix {
             cp2k = cp2kPackage;
           };
-          cp2kLibintPackage = pkgsCp2k.callPackage ./packages/cp2k {
-            stdenv = cp2kGnuStdenv;
-            enableLibint = true;
-          };
-          cp2kElpaPackage = pkgsCp2k.callPackage ./packages/cp2k {
-            stdenv = cp2kGnuStdenv;
-            enableElpa = true;
-          };
         in {
           inherit
             pkgs
@@ -151,36 +111,28 @@
             pkgsOpenmpi4
             openmpi4ForGulp
             gulpOpenmpi4
-            gulp60Openmpi4
             xtbPackage
             amberclassicPackage
             cp2kPackage
-            cp2k20262Package
-            cp2kLibintPackage
-            cp2kElpaPackage;
+            cp2k20262Package;
         };
       systemsData = forEachSystem perSystem;
     in {
       packages = forEachSystem (system:
         let
           systemData = systemsData.${system};
-          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp gulpOpenmpi4 gulp60Openmpi4 xtbPackage;
+          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp gulpOpenmpi4 xtbPackage;
         in
         {
           gulp = gulpOpenmpi4;
           gulp-openmpi4 = gulpOpenmpi4;
           gulp64 = gulpOpenmpi4;
-          gulp60 = gulp60Openmpi4;
           xtb = xtbPackage;
           xtb671 = xtbPackage;
-          amberclassic = systemData.amberclassicPackage;
           antechamber = systemData.amberclassicPackage;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
           cp2k20262 = systemData.cp2k20262Package;
-          cp2k20261 = systemData.cp2kPackage;
-          cp2k20261-libint = systemData.cp2kLibintPackage;
-          cp2k20261-elpa = systemData.cp2kElpaPackage;
-          cp2k = systemData.cp2kPackage;
+          cp2k = systemData.cp2k20262Package;
           orca = pkgs.callPackage ./packages/orca {
             openmpi = openmpi4ForGulp;
           };
@@ -192,9 +144,6 @@
           };
           crystal23 = pkgs.callPackage ./packages/crystal23 {
             openmpi = openmpi4ForGulp;
-            gccFortran = pkgsOpenmpi4.gfortran12;
-          };
-          g-xtb = pkgs.callPackage ./packages/g-xtb {
             gccFortran = pkgsOpenmpi4.gfortran12;
           };
           default = self.packages.${system}.orca;
@@ -219,8 +168,6 @@
               packages.orca
             ] ++ pkgs.lib.optionals (packages ? crystal23) [
               packages.crystal23
-            ] ++ pkgs.lib.optionals (packages ? g-xtb) [
-              packages.g-xtb
             ];
           };
 
@@ -231,21 +178,9 @@
               (openmpi4ForGulp.dev or openmpi4ForGulp)
             ];
           };
-          gulp60 = pkgs.mkShell {
-            packages = [
-              packages.gulp60
-              openmpi4ForGulp
-              (openmpi4ForGulp.dev or openmpi4ForGulp)
-            ];
-          };
           xtb = pkgs.mkShell {
             packages = [
               packages.xtb
-            ];
-          };
-          amberclassic = pkgs.mkShell {
-            packages = [
-              packages.amberclassic
             ];
           };
           antechamber = pkgs.mkShell {
@@ -262,12 +197,6 @@
           };
           cp2k20262 = pkgsCp2k.mkShell {
             packages = [ packages.cp2k20262 packages.cp2k20262.mpi ];
-          };
-          cp2k20261 = pkgsCp2k.mkShell {
-            packages = [
-              packages.cp2k20261
-              packages.cp2k20261.mpi
-            ];
           };
         } // pkgs.lib.optionalAttrs (packages ? orca) {
           orca = pkgs.mkShell {
@@ -295,12 +224,6 @@
             packages = [
               packages.crystal23
               openmpi4ForGulp
-            ];
-          };
-        } // pkgs.lib.optionalAttrs (packages ? g-xtb) {
-          g-xtb = pkgs.mkShell {
-            packages = [
-              packages.g-xtb
             ];
           };
         });

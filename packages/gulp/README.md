@@ -1,8 +1,8 @@
 # GULP 6.4 MPI
 
 `default.nix` holds the current GULP package, exported as `gulp` and `gulp64`.
-Older retained versions use explicit files such as `6.0.nix` and are exported
-with versioned aliases such as `gulp60`.
+Retained older versions would use explicit files such as `6.0.nix` and
+versioned aliases such as `gulp60`.
 
 The GULP source archive is kept outside Git at:
 
@@ -63,26 +63,3 @@ machine, the OpenMPI 4/gfortran-12 variant has been validated with
 Ubuntu/Linux should still be verified separately for actual MPI runs.
 `x86_64-linux` can be re-added to `meta.platforms` once a Linux smoke test is
 recorded.
-
-## GULP 6.0 MPI
-
-The GULP 6.0 source archive is kept outside Git at:
-
-```text
-~/Documents/software/distfiles/gulp/6.0/gulp-6.0.tgz
-```
-
-Verified hashes:
-
-```text
-sha1   1fece7bc22affb8b5d3857bb4ea119251cda0534
-sha256 f73b0f68c8ba499e3f9f0d0de5e3b34307e0b8579387a4cb2b9cdfd1cf62e9d1
-SRI    sha256-9zsPaMi6SZ4/nw0N5eOzQwfguFeTh6TLK5zf0c9i6dE=
-```
-
-Build:
-
-```sh
-nix store add-file ~/Documents/software/distfiles/gulp/6.0/gulp-6.0.tgz
-nix build .#gulp60
-```

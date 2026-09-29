@@ -10,7 +10,6 @@
   openblas,
   dbcsr,
   fftw,
-  libint,
   libvori,
   libxc_7,
   dftd4,
@@ -24,7 +23,6 @@
   pkg-config,
   zlib,
   hdf5-fortran,
-  elpa,
   llvmPackages,
   newScope,
   mctc-lib,
@@ -35,8 +33,6 @@
   toml-f,
   version ? "2026.1",
   sourceHash ? "sha256-1c4jM1Mdu7Lptjn8nQ/nYQpdXQa5mcm0NRsAU9Muw8w=",
-  enableElpa ? false,
-  enableLibint ? false,
 }:
 
 let
@@ -140,9 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
     grimmeCmake.simple-dftd3
     grimmeCmake.tblite
     grimmeCmake.toml-f
-  ]
-  ++ lib.optional enableElpa elpa
-  ++ lib.optional enableLibint libint;
+  ];
 
   propagatedBuildInputs = [ (lib.getBin mpi) ];
   propagatedUserEnvPkgs = [ mpi ];
@@ -187,12 +181,12 @@ install(
     (lib.strings.cmakeBool "CP2K_USE_FFTW3" true)
     (lib.strings.cmakeBool "CP2K_ENABLE_FFTW3_OPENMP_SUPPORT" true)
     (lib.strings.cmakeBool "CP2K_USE_HDF5" true)
-    (lib.strings.cmakeBool "CP2K_USE_LIBINT2" enableLibint)
+    (lib.strings.cmakeBool "CP2K_USE_LIBINT2" false)
     (lib.strings.cmakeBool "CP2K_USE_LIBXC" true)
     (lib.strings.cmakeBool "CP2K_USE_VORI" true)
     (lib.strings.cmakeBool "CP2K_USE_SPGLIB" true)
     (lib.strings.cmakeBool "CP2K_USE_LIBXSMM" false)
-    (lib.strings.cmakeBool "CP2K_USE_ELPA" enableElpa)
+    (lib.strings.cmakeBool "CP2K_USE_ELPA" false)
     (lib.strings.cmakeBool "CP2K_USE_SIRIUS" false)
     (lib.strings.cmakeBool "CP2K_USE_SPLA" false)
     (lib.strings.cmakeBool "CP2K_USE_LIBVDWXC" false)

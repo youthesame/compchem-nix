@@ -25,13 +25,10 @@ packages/
     default.nix
     README.md
   cp2k/
-    default.nix
-    README.md
-  g-xtb/
+    2026.2.nix
     default.nix
     README.md
   gulp/
-    6.0.nix
     default.nix
     README.md
   orca/
@@ -52,9 +49,8 @@ live next to each package:
 - [ORCA](packages/orca/README.md)
 - [CRYSTAL23](packages/crystal23/README.md)
 - [CP2K](packages/cp2k/README.md) (`aarch64-darwin` only)
-- [g-xTB](packages/g-xtb/README.md)
 - [xTB](packages/xtb/README.md)
-- [AmberClassic / antechamber](packages/amberclassic/README.md)
+- [antechamber (AmberClassic)](packages/amberclassic/README.md)
 
 Reusable environments such as `gulp`, `orca`, `cp2k`, `antechamber`, and
 `chemistry` are exposed as `devShells` from `flake.nix`.
@@ -66,28 +62,18 @@ should consume this shared software repo. Project flakes should normally list
 only external scientific binaries. Keep Python and `uv` managed outside Nix.
 
 Use aliases such as `orca` or `gulp` for convenient current defaults. Use
-versioned aliases such as `orca611`, `orca610`, `gulp64`, `gulp60`, or `xtb671`
+versioned aliases such as `orca611`, `orca610`, `gulp64`, `xtb671`, or `cp2k20262`
 when a project needs stricter reproducibility.
 
-Treat ordinary xTB and g-xTB as separate software. Use `xtb` or `xtb671` for
-ordinary xTB. Use `g-xtb` only when the experimental g-xTB package is
-explicitly needed.
 
 ## Local distfiles now in use
 
 ```text
 ~/Documents/software/distfiles/gulp/6.4/gulp-6.4.tgz
-~/Documents/software/distfiles/gulp/6.0/gulp-6.0.tgz
 ~/Documents/software/distfiles/orca/6.1.1/orca_6_1_1_macosx_arm64_openmpi411.run
 ~/Documents/software/distfiles/orca/6.1.0/orca_6_1_0_macosx_arm64_openmpi411.run
 ~/Documents/software/distfiles/crystal23/23-v1.0.1/crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz
 ~/Documents/software/distfiles/crystal23/23-v1.0.1/utils23.tar.gz
-```
-
-`g-xtb` 2.0.1 uses the public macOS arm64 GitHub release asset directly:
-
-```text
-https://github.com/grimme-lab/g-xtb/releases/download/v2.0.1/xtb-6.7.1-gxtb-140526-macos-arm64.tar.gz
 ```
 
 Ordinary `xTB` 6.7.1 uses the public upstream source release directly:

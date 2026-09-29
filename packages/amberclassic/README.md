@@ -17,7 +17,7 @@ https://github.com/Amber-MD/AmberClassic
 /nix/var/nix/profiles/default/bin/nix develop .#antechamber -c antechamber -h
 ```
 
-`amberclassic` and `antechamber` are aliases for the same package. The wrapper
+The package is exported as `antechamber`. The wrapper
 sets `AMBERCLASSICHOME`, `AMBERHOME`, and the runtime library path.
 
 ## Notes

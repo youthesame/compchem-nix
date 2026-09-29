@@ -4,3 +4,4 @@ result-*
 .envrc
 .DS_Store
 .codex/
+gcroots/

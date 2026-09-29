@@ -13,7 +13,7 @@ Declared for `aarch64-darwin` only.
 
 From the upstream release archive, which bundles tblite, dftd4, s-dftd3 and
 their dependencies. gfortran and OpenBLAS; OpenMP on, MPI off, `WITH_TBLITE` on.
-D3 and D4 are built into DFTB+ and need no option.
+`WITH_SDFTD3` is on: `DftD3` needs the s-dftd3 library. D4 is built in.
 
 OpenBLAS is pthreaded here: set both `OMP_NUM_THREADS` and
 `OPENBLAS_NUM_THREADS` when running.
@@ -26,7 +26,7 @@ The full test suite is a flake check rather than part of the package build:
 nix build .#checks.aarch64-darwin.dftbplus-tests --cores 4
 ```
 
-25.1 passed all 428 tests here.
+25.1 passed all 443 tests here.
 
 ## Use
 

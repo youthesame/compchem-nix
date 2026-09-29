@@ -57,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "WITH_OMP" true)
     (lib.cmakeBool "WITH_MPI" false)
     (lib.cmakeBool "WITH_TBLITE" true)
+    # DftD3 in 25.1 is the s-dftd3 library; without it the keyword is refused.
+    (lib.cmakeBool "WITH_SDFTD3" true)
     # Build the bundled externals. `Find` must follow: 25.1 tests for
     # "(^|;)Submodule(^|;)", so "Submodule" alone skips the indirect
     # dependencies, and the sandbox leaves nothing else for it to find.

@@ -25,6 +25,7 @@
           # softwarePackages.xtb671   # Fixed ordinary xTB 6.7.1.
           # softwarePackages.cp2k     # Default CP2K alias, currently CP2K 2026.2.
           # softwarePackages.cp2k20262 # Fixed CP2K 2026.2.
+          # softwarePackages.dftbplus251 # Fixed DFTB+ 25.1; parameters in softwarePackages.dftb-3ob-3-1.
         ];
       };
     };

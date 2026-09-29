@@ -36,6 +36,11 @@ packages/
   crystal23/
     default.nix
     README.md
+  dftb-3ob-3-1/
+    default.nix
+  dftbplus/
+    default.nix
+    README.md
   cp2k/
     2026.2.nix
     default.nix
@@ -61,6 +66,7 @@ live next to each package:
 - [ORCA](packages/orca/README.md)
 - [CRYSTAL23](packages/crystal23/README.md)
 - [CP2K](packages/cp2k/README.md) (`aarch64-darwin` only)
+- [DFTB+ and 3ob-3-1](packages/dftbplus/README.md) (`aarch64-darwin` only)
 - [xTB](packages/xtb/README.md)
 - [antechamber (AmberClassic)](packages/amberclassic/README.md)
 
@@ -74,7 +80,7 @@ should consume this shared software repo. Project flakes should normally list
 only external scientific binaries. Keep Python and `uv` managed outside Nix.
 
 Use aliases such as `orca` or `gulp` for convenient current defaults. Use
-versioned aliases such as `orca611`, `orca610`, `gulp64`, `xtb671`, or `cp2k20262`
+versioned aliases such as `orca611`, `orca610`, `gulp64`, `xtb671`, `cp2k20262`, or `dftbplus251`
 when a project needs stricter reproducibility.
 
 

@@ -10,6 +10,18 @@
   runTests ? false,
 }:
 
+let
+  # The test data `utils/get_opt_externals slakos gbsa` pins for 25.1, as
+  # let bindings so only the test build depends on them.
+  testparams = fetchzip {
+    url = "https://github.com/dftbplus/testparams/archive/0e1d95abc70339d017fd53d40c41c041057fd03f.tar.gz";
+    hash = "sha256-sJ3K8McKQLCW8bg1LXlwbITAwNwHbn8J9yU1X5wKQsE=";
+  };
+  gbsaParameters = fetchzip {
+    url = "https://github.com/grimme-lab/gbsa-parameters/archive/6836c4d997e4135e418cfbe273c96b1a3adb13e2.tar.gz";
+    hash = "sha256-xBINBueBIosotyePxBB2OOVFtn3PgG7853ejuq/ODmo=";
+  };
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "dftbplus";
   version = "25.1";
@@ -19,12 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://github.com/dftbplus/dftbplus/releases/download/${finalAttrs.version}/dftbplus-${finalAttrs.version}.tar.xz";
     hash = "sha256-CpuAQuloEFtT9JxW8FJOH57Ss8XFEbA8GuoLzEFtcnU=";
-  };
-
-  # The commit `utils/get_opt_externals slakos` pins for 25.1.
-  testparams = fetchzip {
-    url = "https://github.com/dftbplus/testparams/archive/0e1d95abc70339d017fd53d40c41c041057fd03f.tar.gz";
-    hash = "sha256-sJ3K8McKQLCW8bg1LXlwbITAwNwHbn8J9yU1X5wKQsE=";
   };
 
   nativeBuildInputs = [
@@ -42,8 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'add_subdirectory("test")' ""
   ''
   + lib.optionalString runTests ''
-    cp -R ${finalAttrs.testparams} external/slakos/origin
-    chmod -R u+w external/slakos/origin
+    cp -R ${testparams} external/slakos/origin
+    cp -R ${gbsaParameters} external/gbsa/origin
+    chmod -R u+w external/slakos/origin external/gbsa/origin
   '';
 
   cmakeFlags = [

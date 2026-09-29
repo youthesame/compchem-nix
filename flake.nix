@@ -97,6 +97,10 @@
           };
           xtbPackage = pkgs.callPackage ./packages/xtb { };
           amberclassicPackage = pkgs.callPackage ./packages/amberclassic { };
+          dftbplusPackage = pkgs.callPackage ./packages/dftbplus {
+            stdenv = pkgs.stdenvAdapters.overrideCC pkgs.stdenv pkgs.gcc;
+          };
+          dftb3ob31Package = pkgs.callPackage ./packages/dftb-3ob-3-1 { };
           cp2kGnuStdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
           cp2kPackage = pkgsCp2k.callPackage ./packages/cp2k {
             stdenv = cp2kGnuStdenv;
@@ -113,6 +117,8 @@
             gulpOpenmpi4
             xtbPackage
             amberclassicPackage
+            dftbplusPackage
+            dftb3ob31Package
             cp2kPackage
             cp2k20262Package;
         };
@@ -130,9 +136,12 @@
           xtb = xtbPackage;
           xtb671 = xtbPackage;
           antechamber = systemData.amberclassicPackage;
+          dftb-3ob-3-1 = systemData.dftb3ob31Package;
         } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
           cp2k20262 = systemData.cp2k20262Package;
           cp2k = systemData.cp2k20262Package;
+          dftbplus = systemData.dftbplusPackage;
+          dftbplus251 = systemData.dftbplusPackage;
           orca = pkgs.callPackage ./packages/orca {
             openmpi = openmpi4ForGulp;
           };
@@ -147,6 +156,11 @@
             gccFortran = pkgsOpenmpi4.gfortran12;
           };
           default = self.packages.${system}.orca;
+        });
+
+      checks = forEachSystem (system:
+        nixpkgs.lib.optionalAttrs (system == "aarch64-darwin") {
+          dftbplus-tests = self.packages.${system}.dftbplus.override { runTests = true; };
         });
 
       devShells = forEachSystem (system:
@@ -194,6 +208,10 @@
               packages.cp2k
               packages.cp2k.mpi
             ];
+          };
+          dftbplus = pkgs.mkShellNoCC {
+            packages = [ packages.dftbplus ];
+            DFTB_3OB = "${packages.dftb-3ob-3-1}/share/slakos/3ob-3-1";
           };
           cp2k20262 = pkgsCp2k.mkShell {
             packages = [ packages.cp2k20262 packages.cp2k20262.mpi ];

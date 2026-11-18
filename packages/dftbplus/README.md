@@ -15,6 +15,9 @@ their dependencies. gfortran and OpenBLAS; OpenMP on, MPI off, `WITH_TBLITE` on.
 OpenBLAS is pthreaded here: set both `OMP_NUM_THREADS` and
 `OPENBLAS_NUM_THREADS` when running.
 
+Apple Accelerate instead of OpenBLAS also passes all 443 tests, but was slower
+on an M4 (3000-atom water SCC, 8 threads: 106 s vs 79–87 s), so it is not used.
+
 ## Tests
 
 The full test suite is a flake check rather than part of the package build:

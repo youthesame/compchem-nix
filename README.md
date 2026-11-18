@@ -41,6 +41,12 @@ nix build .#<package> --out-link gcroots/<package>
 `gcroots/` (Git-ignored) keeps the catalog's own builds across
 `nix-store --gc`.
 
+`nix flake check` runs the DFTB+ test suite and `cp2k-smoke`, which runs the
+inputs in `checks/cp2k/` on 2 MPI ranks and compares the energy, largest
+force, and pressure with `checks/cp2k/reference.txt`. Run it before and after
+any change that rebuilds CP2K. Update the reference only when a change is
+expected to move the numbers.
+
 ## Using it in a project
 
 Copy [templates/project-flake.nix](templates/project-flake.nix) into the

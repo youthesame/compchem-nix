@@ -1,0 +1,6 @@
+# input       quantity  reference              tolerance
+h2o           energy    -17.219925288255940    1e-6
+h2o           fmax      1.96814473E-03         1e-5
+si-kpoints    energy    -31.558325255164622    1e-6
+si-kpoints    fmax      2.09808653E-02         1e-5
+si-kpoints    pressure  -2.58856336855E+03     1.0

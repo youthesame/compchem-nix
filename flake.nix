@@ -149,8 +149,19 @@
           };
         });
 
-      checks = forEachSystem (system: {
-        dftbplus-tests = self.packages.${system}.dftbplus.override { runTests = true; };
-      });
+      checks = forEachSystem (system:
+        let
+          pkgs = systemsData.${system}.pkgs;
+          cp2k = self.packages.${system}.cp2k;
+        in
+        {
+          dftbplus-tests = self.packages.${system}.dftbplus.override { runTests = true; };
+          # Regression check for rebuilds that change CP2K's toolchain or BLAS.
+          cp2k-smoke = pkgs.runCommand "cp2k-smoke" {
+            nativeBuildInputs = [ cp2k cp2k.mpi ];
+          } ''
+            bash ${./checks/cp2k/run.sh} ${./checks/cp2k} | tee $out
+          '';
+        });
     };
 }

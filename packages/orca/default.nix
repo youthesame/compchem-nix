@@ -1,7 +1,8 @@
 {
   lib,
   stdenvNoCC,
-  requireFile,
+  fetchurl,
+  distfiles,
   makeWrapper,
   openmpi,
 }:
@@ -10,9 +11,8 @@ stdenvNoCC.mkDerivation rec {
   pname = "orca";
   version = "6.1.1";
 
-  src = requireFile {
-    name = "orca_6_1_1_macosx_arm64_openmpi411.run";
-    url = "https://orcaforum.kofo.mpg.de/";
+  src = fetchurl {
+    url = "file://${distfiles}/orca/6.1.1/orca_6_1_1_macosx_arm64_openmpi411.run";
     hash = "sha256-D7e00ZlK9UGChjc+LJLaQeOl1ks1Q42PXG+y4CQnFKw=";
   };
 

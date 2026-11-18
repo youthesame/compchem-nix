@@ -13,8 +13,8 @@ https://github.com/Amber-MD/AmberClassic
 ## Build
 
 ```sh
-/nix/var/nix/profiles/default/bin/nix build .#antechamber
-/nix/var/nix/profiles/default/bin/nix develop .#antechamber -c antechamber -h
+nix build .#antechamber
+./result/bin/antechamber -h
 ```
 
 The package is exported as `antechamber`. The wrapper

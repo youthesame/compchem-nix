@@ -2,7 +2,8 @@
   description = "Project dev shell using shared chemistry software";
 
   inputs = {
-    software.url = "path:/Users/matsui-lab/Documents/software/nix";
+    # Commit catalog changes first: the lock records a Git revision.
+    software.url = "git+file:///Users/matsui-lab/Documents/software/nix";
     nixpkgs.follows = "software/nixpkgs";
   };
 
@@ -14,19 +15,18 @@
     in {
       devShells.${system}.default = pkgs.mkShellNoCC {
         packages = [
-          # Enable only the tools this project actually needs.
-          # softwarePackages.orca     # Default ORCA alias, currently ORCA 6.1.1.
-          # softwarePackages.orca611  # Fixed ORCA 6.1.1 for reproducible projects.
-          # softwarePackages.orca610  # Fixed ORCA 6.1.0.
+          # Enable only the tools this project needs.
+          # softwarePackages.orca
           # softwarePackages.crystal23
-          # softwarePackages.gulp     # Default GULP alias, currently GULP 6.4.
-          # softwarePackages.gulp64   # Fixed GULP 6.4.
-          # softwarePackages.xtb      # Default ordinary xTB alias, currently xTB 6.7.1.
-          # softwarePackages.xtb671   # Fixed ordinary xTB 6.7.1.
-          # softwarePackages.cp2k     # Default CP2K alias, currently CP2K 2026.2.
-          # softwarePackages.cp2k20262 # Fixed CP2K 2026.2.
-          # softwarePackages.dftbplus251 # Fixed DFTB+ 25.1; parameters in softwarePackages.dftb-3ob-3-1.
+          # softwarePackages.gulp
+          # softwarePackages.cp2k
+          # softwarePackages.cp2k.mpi
+          # softwarePackages.dftbplus
+          # softwarePackages.xtb
+          # softwarePackages.antechamber
         ];
+        # With dftbplus:
+        # DFTB_3OB = "${softwarePackages.dftb-3ob-3-1}/share/slakos/3ob-3-1";
       };
     };
 }

@@ -1,13 +1,10 @@
 # DFTB+ 25.1
 
-## Version
+## Packages
 
-- `dftbplus`: current default DFTB+, currently 25.1.
-- `dftbplus251`: fixed DFTB+ 25.1.
+- `dftbplus`: DFTB+ 25.1.
 - `dftb-3ob-3-1`: the 3ob-3-1 Slater-Koster set, in `share/slakos/3ob-3-1`
   (`packages/dftb-3ob-3-1`).
-
-Declared for `aarch64-darwin` only.
 
 ## Build
 
@@ -30,9 +27,5 @@ nix build .#checks.aarch64-darwin.dftbplus-tests --cores 4
 
 ## Use
 
-```sh
-nix develop .#dftbplus -c dftb+
-```
-
-The devShell sets `DFTB_3OB` to the 3ob-3-1 directory; a project flake can do
-the same with `"${softwarePackages.dftb-3ob-3-1}/share/slakos/3ob-3-1"`.
+A project flake points DFTB+ at the parameters with
+`DFTB_3OB = "${softwarePackages.dftb-3ob-3-1}/share/slakos/3ob-3-1";`.

@@ -1,7 +1,8 @@
 {
   lib,
   stdenv,
-  requireFile,
+  fetchurl,
+  distfiles,
   gfortran,
   makeWrapper,
   openmpi,
@@ -12,9 +13,8 @@ stdenv.mkDerivation rec {
   pname = "gulp-mpi";
   version = "6.4";
 
-  src = requireFile {
-    name = "gulp-6.4.tgz";
-    url = "https://gulp.curtin.edu.au/gulp/";
+  src = fetchurl {
+    url = "file://${distfiles}/gulp/6.4/gulp-6.4.tgz";
     hash = "sha256-rWtVY+5bmpB1XkEssR7uuonu+PuMc8BLUsJs7mimEYc=";
   };
 

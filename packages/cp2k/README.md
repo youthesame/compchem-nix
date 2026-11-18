@@ -1,14 +1,7 @@
 # CP2K 2026.2
 
-## Version
-
-- `cp2k`: current default CP2K, currently 2026.2.
-- `cp2k20262`: fixed CP2K 2026.2.
-
-`default.nix` is the base derivation, still at 2026.1; `2026.2.nix` overrides
+Exported as `cp2k`. `default.nix` is the base derivation, still at 2026.1; `2026.2.nix` overrides
 its version, source hash, and HDF5. CP2K 2026.1 is no longer exported.
-
-This package is currently declared for `aarch64-darwin` only.
 
 ## Source
 
@@ -34,6 +27,6 @@ LIBVDWXC, PLUMED, TREXIO, GREENX, ELPA, and libint support are disabled in
 ## Quick checks
 
 ```sh
-nix build .#cp2k20262
-nix develop .#cp2k -c cp2k.psmp --version
+nix build .#cp2k
+./result/bin/cp2k.psmp --version
 ```

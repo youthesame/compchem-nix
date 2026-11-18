@@ -1,5 +1,5 @@
 {
-  description = "Reusable Nix software definitions";
+  description = "Nix definitions for computational chemistry software";
 
   inputs = {
     # Stable 25.05 baseline for most reusable chemistry packages.
@@ -12,17 +12,18 @@
 
   outputs = { self, nixpkgs, nixpkgs-cp2k, nixpkgs-openmpi4, ... }:
     let
-      systems = [
-        "aarch64-darwin"
-        "x86_64-linux"
-      ];
+      # Only aarch64-darwin is verified; add Linux when it is set up.
+      systems = [ "aarch64-darwin" ];
+      # Manually downloaded vendor files, kept outside Git and fetched by
+      # fixed-output derivations, so no `nix store add-file` is needed.
+      distfiles = "/opt/distfiles";
 
       forEachSystem = nixpkgs.lib.genAttrs systems;
       pkgsFor = system: import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
-          allowUnsupportedSystem = system == "aarch64-darwin";
+          allowUnsupportedSystem = true;
         };
         overlays = [
           (_final: prev: {
@@ -43,7 +44,7 @@
       };
       pkgsCp2kFor = system: import nixpkgs-cp2k {
         inherit system;
-        config.allowUnsupportedSystem = system == "aarch64-darwin";
+        config.allowUnsupportedSystem = true;
         overlays = [
           (final: prev: {
             dbcsr = prev.dbcsr.overrideAttrs (old: {
@@ -91,6 +92,7 @@
             NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-implicit-function-declaration";
           });
           gulpOpenmpi4 = pkgsOpenmpi4.callPackage ./packages/gulp {
+            inherit distfiles;
             gfortran = pkgsOpenmpi4.gfortran12;
             openmpi = openmpi4ForGulp;
             scalapack = scalapackOpenmpi4ForGulp;
@@ -127,123 +129,28 @@
       packages = forEachSystem (system:
         let
           systemData = systemsData.${system};
-          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp gulpOpenmpi4 xtbPackage;
+          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp;
         in
         {
-          gulp = gulpOpenmpi4;
-          gulp-openmpi4 = gulpOpenmpi4;
-          gulp64 = gulpOpenmpi4;
-          xtb = xtbPackage;
-          xtb671 = xtbPackage;
+          gulp = systemData.gulpOpenmpi4;
+          xtb = systemData.xtbPackage;
           antechamber = systemData.amberclassicPackage;
           dftb-3ob-3-1 = systemData.dftb3ob31Package;
-        } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
-          cp2k20262 = systemData.cp2k20262Package;
           cp2k = systemData.cp2k20262Package;
           dftbplus = systemData.dftbplusPackage;
-          dftbplus251 = systemData.dftbplusPackage;
           orca = pkgs.callPackage ./packages/orca {
-            openmpi = openmpi4ForGulp;
-          };
-          orca611 = pkgs.callPackage ./packages/orca {
-            openmpi = openmpi4ForGulp;
-          };
-          orca610 = pkgs.callPackage ./packages/orca/6.1.0.nix {
+            inherit distfiles;
             openmpi = openmpi4ForGulp;
           };
           crystal23 = pkgs.callPackage ./packages/crystal23 {
+            inherit distfiles;
             openmpi = openmpi4ForGulp;
             gccFortran = pkgsOpenmpi4.gfortran12;
           };
-          default = self.packages.${system}.orca;
         });
 
-      checks = forEachSystem (system:
-        nixpkgs.lib.optionalAttrs (system == "aarch64-darwin") {
-          dftbplus-tests = self.packages.${system}.dftbplus.override { runTests = true; };
-        });
-
-      devShells = forEachSystem (system:
-        let
-          systemData = systemsData.${system};
-          inherit (systemData) pkgs pkgsCp2k openmpi4ForGulp;
-          packages = self.packages.${system};
-        in
-        {
-          chemistry = pkgs.mkShell {
-            packages = [
-              packages.gulp
-              packages.xtb
-              openmpi4ForGulp
-              (openmpi4ForGulp.dev or openmpi4ForGulp)
-              pkgs.python3
-              pkgs.openbabel
-            ] ++ pkgs.lib.optionals (packages ? orca) [
-              packages.orca
-            ] ++ pkgs.lib.optionals (packages ? crystal23) [
-              packages.crystal23
-            ];
-          };
-
-          gulp = pkgs.mkShell {
-            packages = [
-              packages.gulp
-              openmpi4ForGulp
-              (openmpi4ForGulp.dev or openmpi4ForGulp)
-            ];
-          };
-          xtb = pkgs.mkShell {
-            packages = [
-              packages.xtb
-            ];
-          };
-          antechamber = pkgs.mkShell {
-            packages = [
-              packages.antechamber
-            ];
-          };
-        } // pkgs.lib.optionalAttrs (system == "aarch64-darwin") {
-          cp2k = pkgsCp2k.mkShell {
-            packages = [
-              packages.cp2k
-              packages.cp2k.mpi
-            ];
-          };
-          dftbplus = pkgs.mkShellNoCC {
-            packages = [ packages.dftbplus ];
-            DFTB_3OB = "${packages.dftb-3ob-3-1}/share/slakos/3ob-3-1";
-          };
-          cp2k20262 = pkgsCp2k.mkShell {
-            packages = [ packages.cp2k20262 packages.cp2k20262.mpi ];
-          };
-        } // pkgs.lib.optionalAttrs (packages ? orca) {
-          orca = pkgs.mkShell {
-            packages = [
-              packages.orca
-              openmpi4ForGulp
-            ];
-
-            shellHook = ''
-              export ORCA_DIR="${packages.orca}/lib/orca"
-            '';
-          };
-          orca610 = pkgs.mkShell {
-            packages = [
-              packages.orca610
-              openmpi4ForGulp
-            ];
-
-            shellHook = ''
-              export ORCA_DIR="${packages.orca610}/lib/orca"
-            '';
-          };
-        } // pkgs.lib.optionalAttrs (packages ? crystal23) {
-          crystal23 = pkgs.mkShell {
-            packages = [
-              packages.crystal23
-              openmpi4ForGulp
-            ];
-          };
-        });
+      checks = forEachSystem (system: {
+        dftbplus-tests = self.packages.${system}.dftbplus.override { runTests = true; };
+      });
     };
 }

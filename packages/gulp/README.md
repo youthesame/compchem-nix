@@ -1,13 +1,9 @@
 # GULP 6.4 MPI
 
-`default.nix` holds the current GULP package, exported as `gulp` and `gulp64`.
-Retained older versions would use explicit files such as `6.0.nix` and
-versioned aliases such as `gulp60`.
-
-The GULP source archive is kept outside Git at:
+Exported as `gulp`. The source archive is kept outside Git at:
 
 ```text
-~/Documents/software/distfiles/gulp/6.4/gulp-6.4.tgz
+/opt/distfiles/gulp/6.4/gulp-6.4.tgz
 ```
 
 Verified hashes:
@@ -31,18 +27,8 @@ OpenBLAS  0.3.27
 Build:
 
 ```sh
-nix store add-file ~/Documents/software/distfiles/gulp/6.4/gulp-6.4.tgz
 nix build .#gulp
 ./result/bin/gulp
-```
-
-Interactive shell:
-
-```sh
-nix develop .#gulp
-which gulp
-which mpirun
-which mpif90
 ```
 
 Filename-based MPI runs are supported:
@@ -60,6 +46,3 @@ mpirun -np 6 gulp < input.gin > output.got
 The wrapper sets `GULP_ROOT`, `GULP_LIB`, and `GULP_DOC`. On this macOS
 machine, the OpenMPI 4/gfortran-12 variant has been validated with
 `mpirun -np 6 gulp < input.gin > output.got` against `Examples/example1.gin`.
-Ubuntu/Linux should still be verified separately for actual MPI runs.
-`x86_64-linux` can be re-added to `meta.platforms` once a Linux smoke test is
-recorded.

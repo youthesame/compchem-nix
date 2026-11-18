@@ -3,8 +3,8 @@
 CRYSTAL23 uses two manually supplied files:
 
 ```text
-~/Documents/software/distfiles/crystal23/23-v1.0.1/crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz
-~/Documents/software/distfiles/crystal23/23-v1.0.1/utils23.tar.gz
+/opt/distfiles/crystal23/23-v1.0.1/crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz
+/opt/distfiles/crystal23/23-v1.0.1/utils23.tar.gz
 ```
 
 Verified hashes:
@@ -24,7 +24,5 @@ SRI    sha256-bkUVLnoVYbiVlCV8Wx2xJlBa6qAoLkrAn8QeR4qdsyg=
 Build:
 
 ```sh
-nix store add-file ~/Documents/software/distfiles/crystal23/23-v1.0.1/crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz
-nix store add-file ~/Documents/software/distfiles/crystal23/23-v1.0.1/utils23.tar.gz
 nix build .#crystal23
 ```

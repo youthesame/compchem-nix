@@ -2,10 +2,7 @@
 
 Ordinary xTB is packaged separately from g-xTB.
 
-## Version
-
-- `xtb`: current default ordinary xTB, currently 6.7.1.
-- `xtb671`: fixed ordinary xTB 6.7.1.
+Exported as `xtb` (6.7.1).
 
 ## Source
 
@@ -42,5 +39,5 @@ sha256-eaKi9QCRs7lB5ROcGzilMgPV0um6SWp61QXYwxzNYBM=
 
 ```sh
 nix build .#xtb
-nix develop .#xtb -c xtb --version
+./result/bin/xtb --version
 ```

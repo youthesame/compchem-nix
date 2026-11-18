@@ -1,7 +1,8 @@
 {
   lib,
   stdenvNoCC,
-  requireFile,
+  fetchurl,
+  distfiles,
   makeWrapper,
   tcsh,
   openmpi,
@@ -12,15 +13,13 @@ stdenvNoCC.mkDerivation rec {
   pname = "crystal23";
   version = "23-v1.0.1";
 
-  exeSrc = requireFile {
-    name = "crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz";
-    url = "https://www.crystal.unito.it/";
+  exeSrc = fetchurl {
+    url = "file://${distfiles}/crystal23/23-v1.0.1/crystal23_v1_0_1_MacOsX-gnu12.1_openmpi4.1.1_exe.tar.gz";
     hash = "sha256-sBzgA2oyuvhpXNmvG3fI2MUQMFgbvw31WrmDXe1u+cU=";
   };
 
-  utilsSrc = requireFile {
-    name = "utils23.tar.gz";
-    url = "https://www.crystal.unito.it/";
+  utilsSrc = fetchurl {
+    url = "file://${distfiles}/crystal23/23-v1.0.1/utils23.tar.gz";
     hash = "sha256-bkUVLnoVYbiVlCV8Wx2xJlBa6qAoLkrAn8QeR4qdsyg=";
   };
 

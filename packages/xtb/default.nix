@@ -50,6 +50,12 @@ stdenv.mkDerivation rec {
     "-Dopenmp=true"
   ];
 
+  # Newer meson compiles the xtb executable before the library modules it
+  # uses exist; build the libraries first.
+  preBuild = ''
+    ninja -j$NIX_BUILD_CORES libxtb.a libxtb.6.dylib
+  '';
+
   postInstall = ''
     wrapProgram "$out/bin/xtb" \
       --set XTBPATH "$out/share/xtb"

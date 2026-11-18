@@ -2,15 +2,15 @@
   description = "Nix definitions for computational chemistry software";
 
   inputs = {
-    # Stable 25.05 baseline for most reusable chemistry packages.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    # Unstable pin for newer CP2K toolchain/deps on aarch64-darwin.
-    nixpkgs-cp2k.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # Keep OpenMPI 4.1.x + gfortran12 ABI for vendor ORCA/CRYSTAL23/GULP binaries.
-    nixpkgs-openmpi4.url = "github:NixOS/nixpkgs/nixos-24.05";
+    # Every package except CP2K. The vendor ORCA and CRYSTAL23 binaries were
+    # built against OpenMPI 4.1, but run on OpenMPI 5 (same libmpi.40 soname).
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # CP2K 2026.2 needs the tblite 0.5 / dftd4 3.7 generation of the Grimme
+    # libraries. Move this pin when moving to the next CP2K release.
+    nixpkgs-cp2k.url = "github:NixOS/nixpkgs/567a49d1913ce81ac6e9582e3553dd90a955875f";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-cp2k, nixpkgs-openmpi4, ... }:
+  outputs = { self, nixpkgs, nixpkgs-cp2k, ... }:
     let
       # Only aarch64-darwin is verified; add Linux when it is set up.
       systems = [ "aarch64-darwin" ];
@@ -19,32 +19,13 @@
       distfiles = "/opt/distfiles";
 
       forEachSystem = nixpkgs.lib.genAttrs systems;
-      pkgsFor = system: import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-          allowUnsupportedSystem = true;
-        };
-        overlays = [
-          (_final: prev: {
-            mctc-lib = prev.mctc-lib.overrideAttrs (_: {
-              doCheck = false;
-            });
-            multicharge = prev.multicharge.overrideAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
-            });
-            dftd4 = prev.dftd4.overrideAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
-            });
-            simple-dftd3 = prev.simple-dftd3.overrideAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ prev.llvmPackages.openmp ];
-            });
-          })
-        ];
+      config = {
+        allowUnfree = true;
+        allowUnsupportedSystem = true;
       };
+      pkgsFor = system: import nixpkgs { inherit system config; };
       pkgsCp2kFor = system: import nixpkgs-cp2k {
-        inherit system;
-        config.allowUnsupportedSystem = true;
+        inherit system config;
         overlays = [
           (final: prev: {
             dbcsr = prev.dbcsr.overrideAttrs (old: {
@@ -66,92 +47,45 @@
           })
         ];
       };
-      pkgsOpenmpi4For = system: import nixpkgs-openmpi4 {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = [
-          (_final: prev: {
-            gfortran = prev.gfortran12;
-          })
-        ];
-      };
-      perSystem = system:
-        let
-          pkgs = pkgsFor system;
-          pkgsCp2k = pkgsCp2kFor system;
-          pkgsOpenmpi4 = pkgsOpenmpi4For system;
-          openmpi4ForGulp = (pkgsOpenmpi4.openmpi.override {
-            gfortran = pkgsOpenmpi4.gfortran12;
-          }).overrideAttrs (_: {
-            doCheck = false;
-          });
-          scalapackOpenmpi4ForGulp = (pkgsOpenmpi4.scalapack.override {
-            mpi = openmpi4ForGulp;
-          }).overrideAttrs (old: {
-            doCheck = false;
-            NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-implicit-function-declaration";
-          });
-          gulpOpenmpi4 = pkgsOpenmpi4.callPackage ./packages/gulp {
-            inherit distfiles;
-            gfortran = pkgsOpenmpi4.gfortran12;
-            openmpi = openmpi4ForGulp;
-            scalapack = scalapackOpenmpi4ForGulp;
-          };
-          xtbPackage = pkgs.callPackage ./packages/xtb { };
-          amberclassicPackage = pkgs.callPackage ./packages/amberclassic { };
-          dftbplusPackage = pkgs.callPackage ./packages/dftbplus {
-            stdenv = pkgs.stdenvAdapters.overrideCC pkgs.stdenv pkgs.gcc;
-          };
-          dftb3ob31Package = pkgs.callPackage ./packages/dftb-3ob-3-1 { };
-          cp2kGnuStdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
-          cp2kPackage = pkgsCp2k.callPackage ./packages/cp2k {
-            stdenv = cp2kGnuStdenv;
-          };
-          cp2k20262Package = pkgsCp2k.callPackage ./packages/cp2k/2026.2.nix {
-            cp2k = cp2kPackage;
-          };
-        in {
-          inherit
-            pkgs
-            pkgsCp2k
-            pkgsOpenmpi4
-            openmpi4ForGulp
-            gulpOpenmpi4
-            xtbPackage
-            amberclassicPackage
-            dftbplusPackage
-            dftb3ob31Package
-            cp2kPackage
-            cp2k20262Package;
-        };
-      systemsData = forEachSystem perSystem;
     in {
       packages = forEachSystem (system:
         let
-          systemData = systemsData.${system};
-          inherit (systemData) pkgs pkgsOpenmpi4 openmpi4ForGulp;
+          pkgs = pkgsFor system;
+          pkgsCp2k = pkgsCp2kFor system;
+          gnuStdenv = pkgs.stdenvAdapters.overrideCC pkgs.stdenv pkgs.gcc;
+          cp2kBase = pkgsCp2k.callPackage ./packages/cp2k {
+            stdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
+          };
         in
         {
-          gulp = systemData.gulpOpenmpi4;
-          xtb = systemData.xtbPackage;
-          antechamber = systemData.amberclassicPackage;
-          dftb-3ob-3-1 = systemData.dftb3ob31Package;
-          cp2k = systemData.cp2k20262Package;
-          dftbplus = systemData.dftbplusPackage;
-          orca = pkgs.callPackage ./packages/orca {
-            inherit distfiles;
-            openmpi = openmpi4ForGulp;
-          };
+          orca = pkgs.callPackage ./packages/orca { inherit distfiles; };
           crystal23 = pkgs.callPackage ./packages/crystal23 {
             inherit distfiles;
-            openmpi = openmpi4ForGulp;
-            gccFortran = pkgsOpenmpi4.gfortran12;
+            gccFortran = pkgs.gfortran;
           };
+          gulp = pkgs.callPackage ./packages/gulp { inherit distfiles; };
+          cp2k = pkgsCp2k.callPackage ./packages/cp2k/2026.2.nix { cp2k = cp2kBase; };
+          dftbplus = pkgs.callPackage ./packages/dftbplus { stdenv = gnuStdenv; };
+          dftb-3ob-3-1 = pkgs.callPackage ./packages/dftb-3ob-3-1 { };
+          xtb = pkgs.callPackage ./packages/xtb (
+            let
+              # The meson builds of these Grimme libraries need libomp's omp.h.
+              withOpenmp = pkg: pkg.overrideAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.llvmPackages.openmp ];
+              });
+              mctc-lib = pkgs.mctc-lib.overrideAttrs { doCheck = false; };
+              multicharge = withOpenmp (pkgs.multicharge.override { inherit mctc-lib; });
+            in
+            {
+              inherit mctc-lib multicharge;
+              dftd4 = withOpenmp (pkgs.dftd4.override { inherit mctc-lib multicharge; });
+            });
+          antechamber = pkgs.callPackage ./packages/amberclassic { };
         });
 
       checks = forEachSystem (system:
         let
-          pkgs = systemsData.${system}.pkgs;
+          pkgs = pkgsFor system;
           cp2k = self.packages.${system}.cp2k;
         in
         {

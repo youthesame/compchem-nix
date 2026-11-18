@@ -20,6 +20,14 @@ package so the local flake can support Apple Silicon / `aarch64-darwin` with
 custom dependency overrides in the `pkgsCp2k` overlay. The flake currently
 overrides dependencies such as `dbcsr` (`USE_SMM=blas`).
 
+CP2K builds from its own `nixpkgs-cp2k` input, pinned to a June 2026 nixpkgs.
+CP2K 2026.2 needs tblite 0.5 and dftd4 3.7; later nixpkgs ships tblite 0.8 and
+dftd4 4.3, which it does not compile against. Move the pin with the next CP2K
+release, and run `nix flake check` (the `cp2k-smoke` check) after moving it.
+
+Release builds would add `-mcpu=native`; `default.nix` replaces it with
+`-mcpu=apple-m1` so the binary does not depend on the build machine.
+
 The derivation builds CP2K with MPI enabled. GPU, SIRIUS, LIBXSMM, SPLA,
 LIBVDWXC, PLUMED, TREXIO, GREENX, ELPA, and libint support are disabled in
 `packages/cp2k/default.nix`.

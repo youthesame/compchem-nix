@@ -14,15 +14,16 @@ sha256 ad6b5563ee5b9a90755e412cb11eeeba89eef8fb8c73c04b52c26cee68a61187
 SRI    sha256-rWtVY+5bmpB1XkEssR7uuonu+PuMc8BLUsJs7mimEYc=
 ```
 
-The default `gulp` package is pinned to the OpenMPI 4 toolchain from
-`nixpkgs-openmpi4`, with gfortran pinned to 12:
+Toolchain from the catalog's nixpkgs at the time of writing:
 
 ```text
-OpenMPI   4.1.6
-gfortran  12.3.0
-ScaLAPACK 2.2.1
-OpenBLAS  0.3.27
+OpenMPI   5.0.11
+gfortran  16.2.0
+ScaLAPACK 2.2.3
+OpenBLAS  0.3.33
 ```
+
+It is compiled at `-O0`: gfortran 16.2 does not finish `dumpgen.F90` at `-O2`.
 
 Build:
 
@@ -43,6 +44,5 @@ Standard stdin redirection is also valid when the input file exists:
 mpirun -np 6 gulp < input.gin > output.got
 ```
 
-The wrapper sets `GULP_ROOT`, `GULP_LIB`, and `GULP_DOC`. On this macOS
-machine, the OpenMPI 4/gfortran-12 variant has been validated with
-`mpirun -np 6 gulp < input.gin > output.got` against `Examples/example1.gin`.
+The wrapper sets `GULP_ROOT`, `GULP_LIB`, and `GULP_DOC`. `Examples/example1.gin` gives the same lattice energy as the earlier OpenMPI
+4/gfortran 12 build.

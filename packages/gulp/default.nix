@@ -29,6 +29,8 @@ stdenv.mkDerivation rec {
     scalapack
   ];
 
+  # OPT1/OPT2 are lowered to -O0 because gfortran does not finish compiling
+  # dumpgen.F90 at -O2 (still running after an hour with gfortran 16.2).
   postPatch = ''
     patchShebangs Src/mkgulp
 

@@ -143,6 +143,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   postPatch = ''
     patchShebangs tools exts/dbcsr/tools/build_utils exts/dbcsr/.cp2k
+    # Release builds add -mcpu=native on Apple Silicon with GCC, which ties the
+    # binary to the build machine. GCC resolves it to apple-m1 on an M4 anyway.
+    substituteInPlace cmake/CompilerConfiguration.cmake \
+      --replace-fail 'set(_CP2K_GNU_NATIVE_TUNE "-mcpu=native")' 'set(_CP2K_GNU_NATIVE_TUNE "-mcpu=apple-m1")'
     substituteInPlace CMakeLists.txt \
       --replace-fail "  find_package(mctc-lib REQUIRED)" "  find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)

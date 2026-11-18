@@ -31,7 +31,7 @@ sha256-eaKi9QCRs7lB5ROcGzilMgPV0um6SWp61QXYwxzNYBM=
   banner. The Nix package version is still fixed to the v6.7.1 release archive
   and hash above.
 - `tblite` is disabled because the 6.7.1 source release expects a newer
-  `tblite` API than nixpkgs 25.05 provides, and the upstream wrap file points to
+  `tblite` API than nixpkgs provided when it was packaged, and the upstream wrap file points to
   an unreproducible `head` revision.
 - `cpcmx` is disabled because it is not available in this Nix package set.
 

@@ -1,7 +1,7 @@
 # compchem-nix
 
 Nix definitions for the computational chemistry software I use on
-`aarch64-darwin`. Licensed vendor files are not included.
+`aarch64-darwin` and `x86_64-linux`. Licensed vendor files are not included.
 
 ## Packages
 
@@ -30,6 +30,10 @@ packages fetch them with `file://` URLs:
 The Nix build user must be able to read them, so keep directories `755` and
 files `644`. Do not move them under the home directory: the build user cannot
 read it, and macOS protects `~/Documents`.
+
+On Linux the build sandbox hides `/opt`, so add
+`extra-sandbox-paths = /opt/distfiles` to `/etc/nix/nix.conf` and restart
+`nix-daemon`.
 
 ## Checks
 

@@ -12,13 +12,14 @@
 
   outputs = { self, nixpkgs, nixpkgs-cp2k, ... }:
     let
-      # Only aarch64-darwin is verified; add Linux when it is set up.
-      systems = [ "aarch64-darwin" ];
+      systems = [ "aarch64-darwin" "x86_64-linux" ];
+      lib = nixpkgs.lib;
+      isDarwin = system: lib.hasSuffix "darwin" system;
       # Manually downloaded vendor files, kept outside Git and fetched by
       # fixed-output derivations, so no `nix store add-file` is needed.
       distfiles = "/opt/distfiles";
 
-      forEachSystem = nixpkgs.lib.genAttrs systems;
+      forEachSystem = lib.genAttrs systems;
       config = {
         allowUnfree = true;
         allowUnsupportedSystem = true;
@@ -26,7 +27,8 @@
       pkgsFor = system: import nixpkgs { inherit system config; };
       pkgsCp2kFor = system: import nixpkgs-cp2k {
         inherit system config;
-        overlays = [
+        # libxsmm and the dbcsr and spglib tests do not build on darwin.
+        overlays = lib.optionals (isDarwin system) [
           (final: prev: {
             dbcsr = prev.dbcsr.overrideAttrs (old: {
               buildInputs =
@@ -53,24 +55,30 @@
           pkgs = pkgsFor system;
           pkgsCp2k = pkgsCp2kFor system;
           gnuStdenv = pkgs.stdenvAdapters.overrideCC pkgs.stdenv pkgs.gcc;
+          # Vendor binaries differ per OS: packages/<name>/{darwin,linux}.nix.
+          byOs = dir: dir + (if isDarwin system then "/darwin.nix" else "/linux.nix");
+          # nixpkgs' openblas uses 64-bit integers on x86_64-linux; these
+          # packages call BLAS and LAPACK with 32-bit integers.
+          lp64 = p: p.openblas.override { blas64 = false; };
           cp2kBase = pkgsCp2k.callPackage ./packages/cp2k {
             stdenv = pkgsCp2k.stdenvAdapters.overrideCC pkgsCp2k.stdenv pkgsCp2k.gcc;
+            openblas = lp64 pkgsCp2k;
           };
         in
         {
-          orca = pkgs.callPackage ./packages/orca { inherit distfiles; };
-          crystal23 = pkgs.callPackage ./packages/crystal23 {
-            inherit distfiles;
-            gccFortran = pkgs.gfortran;
-          };
+          orca = pkgs.callPackage (byOs ./packages/orca) { inherit distfiles; };
+          crystal23 = pkgs.callPackage (byOs ./packages/crystal23) { inherit distfiles; };
           gulp = pkgs.callPackage ./packages/gulp { inherit distfiles; };
           cp2k = pkgsCp2k.callPackage ./packages/cp2k/2026.2.nix { cp2k = cp2kBase; };
-          dftbplus = pkgs.callPackage ./packages/dftbplus { stdenv = gnuStdenv; };
+          dftbplus = pkgs.callPackage ./packages/dftbplus {
+            stdenv = gnuStdenv;
+            openblas = lp64 pkgs;
+          };
           dftb-3ob-3-1 = pkgs.callPackage ./packages/dftb-3ob-3-1 { };
           xtb = pkgs.callPackage ./packages/xtb (
             let
-              # The meson builds of these Grimme libraries need libomp's omp.h.
-              withOpenmp = pkg: pkg.overrideAttrs (old: {
+              # On darwin the meson builds of these Grimme libraries need libomp's omp.h.
+              withOpenmp = pkg: if !(isDarwin system) then pkg else pkg.overrideAttrs (old: {
                 buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.llvmPackages.openmp ];
               });
               mctc-lib = pkgs.mctc-lib.overrideAttrs { doCheck = false; };
@@ -78,6 +86,7 @@
             in
             {
               inherit mctc-lib multicharge;
+              openblas = lp64 pkgs;
               dftd4 = withOpenmp (pkgs.dftd4.override { inherit mctc-lib multicharge; });
             });
           antechamber = pkgs.callPackage ./packages/amberclassic { };

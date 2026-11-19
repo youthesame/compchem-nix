@@ -86,7 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "DFTB+ density functional tight binding package";
     homepage = "https://dftbplus.org";
     license = lib.licenses.lgpl3Plus;
-    platforms = [ "aarch64-darwin" ];
+    platforms = [ "aarch64-darwin" "x86_64-linux" ];
     mainProgram = "dftb+";
   };
 })

@@ -6,7 +6,7 @@
   makeWrapper,
   tcsh,
   openmpi,
-  gccFortran,
+  gfortran,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -51,7 +51,7 @@ stdenvNoCC.mkDerivation rec {
         --set CRY23_ARCH "MacOsx_ARM-gfortran" \
         --set VERSION "v1.0.1" \
         --prefix PATH : "$root/bin/MacOsx_ARM-gfortran/v1.0.1:$root/utils23:${openmpi}/bin" \
-        --prefix DYLD_FALLBACK_LIBRARY_PATH : "${gccFortran.cc.lib}/lib:${openmpi}/lib"
+        --prefix DYLD_FALLBACK_LIBRARY_PATH : "${gfortran.cc.lib}/lib:${openmpi}/lib"
     done
 
     for script in "$root"/utils23/run*; do
@@ -64,7 +64,7 @@ stdenvNoCC.mkDerivation rec {
         --set CRY23_UTILS "$root/utils23" \
         --set-default CRY23_SCRDIR "/tmp" \
         --prefix PATH : "$root/bin/MacOsx_ARM-gfortran/v1.0.1:$root/utils23:${openmpi}/bin:${tcsh}/bin" \
-        --prefix DYLD_FALLBACK_LIBRARY_PATH : "${gccFortran.cc.lib}/lib:${openmpi}/lib"
+        --prefix DYLD_FALLBACK_LIBRARY_PATH : "${gfortran.cc.lib}/lib:${openmpi}/lib"
     done
 
     runHook postInstall

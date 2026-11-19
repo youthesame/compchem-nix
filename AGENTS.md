@@ -1,6 +1,7 @@
 # compchem-nix
 
-- Target `aarch64-darwin` only. Linux is not set up yet.
+- Target `aarch64-darwin` and `x86_64-linux`. Vendor binaries differ by
+  platform, so their packages split into `darwin.nix` and `linux.nix`.
 - One output name per package, no version aliases. Projects pin versions by
   locking this repository at a Git commit.
 - Licensed vendor files go in `/opt/distfiles/<package>/<version>/` (dirs

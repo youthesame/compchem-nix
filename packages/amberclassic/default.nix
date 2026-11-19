@@ -7,6 +7,7 @@
   bison,
   rsync,
   makeWrapper,
+  tcsh,
 }:
 
 stdenv.mkDerivation {
@@ -27,19 +28,29 @@ stdenv.mkDerivation {
     gfortran
     rsync
     makeWrapper
-  ];
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ tcsh ];
 
-  postPatch = ''
+  postPatch =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      patchShebangs configure
+      grep -rlZ /bin/rm configure src | xargs -0 sed -i "s|/bin/rm|rm|g"
+    ''
+    + ''
     substituteInPlace configure \
       --replace-fail 'enable_sse="--enable-sse2=yes --enable-avx=yes"' 'enable_sse=""'
   '';
+
+  # GCC 15+ defaults to C23, where the bundled NetCDF's `false` enum fails, and
+  # GCC 14+ rejects NAB's mismatched pointer types unless -fpermissive.
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux { NIX_CFLAGS_COMPILE = "-std=gnu17 -fpermissive"; };
 
   configurePhase = ''
     runHook preConfigure
 
     # With --clang, configure builds fftw without OpenMP but still links
     # -lfftw3_omp; --noopenmp drops it.
-    ./configure --clang --noboost --noopenmp
+    ./configure ${lib.optionalString stdenv.hostPlatform.isDarwin "--clang"} --noboost --noopenmp
 
     runHook postConfigure
   '';

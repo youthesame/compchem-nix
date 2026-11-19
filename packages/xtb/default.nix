@@ -34,8 +34,7 @@ stdenv.mkDerivation rec {
     makeWrapper
   ];
 
-  buildInputs = [
-    llvmPackages.openmp
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ] ++ [
     openblas
     mctc-lib
     multicharge
@@ -53,7 +52,9 @@ stdenv.mkDerivation rec {
   # Newer meson compiles the xtb executable before the library modules it
   # uses exist; build the libraries first.
   preBuild = ''
-    ninja -j$NIX_BUILD_CORES libxtb.a libxtb.6.dylib
+    ninja -j$NIX_BUILD_CORES libxtb.a ${
+      if stdenv.hostPlatform.isDarwin then "libxtb.6.dylib" else "libxtb.so.6.7.0"
+    }
   '';
 
   postInstall = ''

@@ -36,6 +36,9 @@
 }:
 
 let
+  # gfortran uses libgomp on Linux; mixing in LLVM libomp crashes CP2K.
+  darwinOpenmp = lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
+
   grimmeCmake = lib.makeScope newScope (self: {
     mctc-lib = mctc-lib.override {
       buildType = "cmake";
@@ -51,7 +54,7 @@ let
       buildType = "cmake";
       inherit (self) mstore mctc-lib multicharge;
     }).overrideAttrs (old: {
-      buildInputs = (old.buildInputs or [ ]) ++ [ llvmPackages.openmp ];
+      buildInputs = (old.buildInputs or [ ]) ++ darwinOpenmp;
     });
 
     jonquil = jonquil.override {
@@ -68,7 +71,7 @@ let
       buildType = "cmake";
       inherit (self) mctc-lib mstore;
     }).overrideAttrs (old: {
-      buildInputs = (old.buildInputs or [ ]) ++ [ llvmPackages.openmp ];
+      buildInputs = (old.buildInputs or [ ]) ++ darwinOpenmp;
     });
 
     test-drive = test-drive.override { buildType = "cmake"; };
@@ -77,7 +80,7 @@ let
       buildType = "cmake";
       inherit (self) mctc-lib mstore toml-f;
     }).overrideAttrs (old: {
-      buildInputs = (old.buildInputs or [ ]) ++ [ llvmPackages.openmp ];
+      buildInputs = (old.buildInputs or [ ]) ++ darwinOpenmp;
     });
 
     tblite = (tblite.override {
@@ -91,7 +94,7 @@ let
         simple-dftd3
         ;
     }).overrideAttrs (old: {
-      buildInputs = (old.buildInputs or [ ]) ++ [ llvmPackages.openmp ];
+      buildInputs = (old.buildInputs or [ ]) ++ darwinOpenmp;
     });
   });
 
@@ -130,8 +133,10 @@ stdenv.mkDerivation (finalAttrs: {
     dbcsr
     zlib
     hdf5-fortran
-    llvmPackages.libcxx
-    llvmPackages.openmp
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.libcxx ]
+  ++ darwinOpenmp
+  ++ [
     grimmeCmake.dftd4
     grimmeCmake.simple-dftd3
     grimmeCmake.tblite
@@ -159,7 +164,7 @@ stdenv.mkDerivation (finalAttrs: {
   find_package(mctc-lib REQUIRED)"
 
     substituteInPlace cmake/modules/FindLibVORI.cmake \
-      --replace-fail '"''${CP2K_LIBVORI_LINK_LIBRARIES}")' '"''${CP2K_LIBVORI_LINK_LIBRARIES};c++")
+      --replace-fail '"''${CP2K_LIBVORI_LINK_LIBRARIES}")' '"''${CP2K_LIBVORI_LINK_LIBRARIES};${if stdenv.hostPlatform.isDarwin then "c++" else "stdc++"}")
   set_target_properties(
     cp2k::VORI::vori PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")'
 
@@ -175,6 +180,11 @@ stdenv.mkDerivation (finalAttrs: {
 
 install(
   TARGETS ''${__CP2K_APPS} cp2k-bin'
+  ''
+  # Likewise -march=native on x86-64: pin x86-64-v3 (AVX2 and FMA).
+  + lib.optionalString stdenv.hostPlatform.isx86_64 ''
+    substituteInPlace cmake/CompilerConfiguration.cmake \
+      --replace-fail 'set(_CP2K_GNU_NATIVE_TUNE "-march=native;-mtune=native")' 'set(_CP2K_GNU_NATIVE_TUNE "-march=x86-64-v3")'
   '';
 
   cmakeFlags = [
@@ -231,6 +241,6 @@ install(
     description = "Quantum chemistry and solid state physics program";
     homepage = "https://www.cp2k.org";
     license = lib.licenses.gpl2Plus;
-    platforms = [ "aarch64-darwin" ];
+    platforms = [ "aarch64-darwin" "x86_64-linux" ];
   };
 })

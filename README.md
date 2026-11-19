@@ -53,3 +53,6 @@ Copy [templates/project-flake.nix](templates/project-flake.nix) into the
 project and enable the packages it needs. The template locks this repository
 with `git+file:`, so commit catalog changes before running `nix flake update
 software` in a project.
+
+With direnv and nix-direnv installed, an untracked `.envrc` containing
+`use flake` loads the shell on `cd` and keeps it from garbage collection.

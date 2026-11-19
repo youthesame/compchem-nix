@@ -9,15 +9,16 @@
   makeWrapper,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "amberclassic";
-  version = "2.0";
+  # Unreleased upstream commit; it updates GAFF2 to 2.2.30.
+  version = "2.0-unstable-gaff2.2.30";
 
   src = fetchFromGitHub {
     owner = "Amber-MD";
     repo = "AmberClassic";
-    rev = "v${version}";
-    hash = "sha256-xhDWyEXnKBroTVVLe4TdU6OpxskLpXBqJvfJjbwv06A=";
+    rev = "919e8b895a4566669325aee14ecf540a5fcb1b89";
+    hash = "sha256-5F0q1gD5TcT8enoGQAva90Oh0zLPDe5MV4RQn8Yf3J0=";
   };
 
   nativeBuildInputs = [
@@ -36,7 +37,9 @@ stdenv.mkDerivation rec {
   configurePhase = ''
     runHook preConfigure
 
-    ./configure --clang --noboost
+    # With --clang, configure builds fftw without OpenMP but still links
+    # -lfftw3_omp; --noopenmp drops it.
+    ./configure --clang --noboost --noopenmp
 
     runHook postConfigure
   '';

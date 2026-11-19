@@ -24,6 +24,7 @@
           # softwarePackages.dftbplus
           # softwarePackages.xtb
           # softwarePackages.antechamber
+          # pkgs.openmpi  # mpirun for crystal23 and gulp; cp2k uses cp2k.mpi
         ];
         # With dftbplus:
         # DFTB_3OB = "${softwarePackages.dftb-3ob-3-1}/share/slakos/3ob-3-1";
